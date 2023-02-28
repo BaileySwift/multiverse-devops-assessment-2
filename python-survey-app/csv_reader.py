@@ -6,6 +6,8 @@ def read_csv_file(filename):
         reader = csv.DictReader(csvfile)
         for row in reader:
             if row:
+                row['first_name'] = row['first_name'].capitalize()  # capitalize first name
+                row['last_name'] = row['last_name'].capitalize()  # capitalize last name
                 data.append(row)
     return data
 
