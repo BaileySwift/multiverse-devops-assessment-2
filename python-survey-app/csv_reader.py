@@ -10,4 +10,5 @@ def read_csv_file(file_path):
             if row['user_id'] not in user_ids:
                 data.append(row)
                 user_ids.add(row['user_id'])
-    return data 
+                
+    return data
