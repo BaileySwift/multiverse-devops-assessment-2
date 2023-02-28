@@ -1,14 +1,28 @@
 import csv
 
-def read_csv_file(file_path):
+def read_csv_file(filename):
     data = []
-    user_ids = set()
-    with open(file_path, 'r') as csvfile:
+    with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            # Check if the User ID has already been addedd to the set
-            if row['user_id'] not in user_ids:
+            if row:
                 data.append(row)
-                user_ids.add(row['user_id'])
-                
     return data
+
+def remove_duplicates(data):
+    seen_ids = set()
+    new_data = []
+    for row in data:
+        if row['user_id'] not in seen_ids:
+            seen_ids.add(row['user_id'])
+            new_data.append(row)
+    return new_data
+
+if __name__ == '__main__':
+    input_file = 'results.csv'
+    data = read_csv_file(input_file)
+    data = remove_duplicates(data)
+    
+    # print final data
+    for row in data:
+        print(row)

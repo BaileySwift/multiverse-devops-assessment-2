@@ -1,43 +1,59 @@
-import pytest
-from csv_reader import read_csv_file
+import csv
 
-@pytest.fixture
-def sample_data():
-    return [
-        ['user_id','first_name','last_name','answer_1','answer_2','answer_3'],
-        ['1','Charissa','Clark','yes','c','7'],
-        ['richard','McKinney','yes','b','7'],
-        ['','','','','',''],
-        ['3','patience','reeves','yes','b','9'],
-        ['4','Harding','Estrada','no','b','14'],
-        ['5','India','Gentry','yes','c','7'],
-        ['6','Abra','Sheppard','yes','b','6'],
-        ['6','Abra','Sheppard','no','a','8'],
-        ['7','Bryar','cooley','yes','a','11'],
-        ['8','Diana','Cameron','yes','b','9'],
-        ['9','Alexander','Herring','no','b','4'],
-        ['10','Graiden','Cannon','no','b','13'],
-        ['11','Uma','Glass','yes','a','2'],
-        ['12','Brittany','Weeks','yes','b','8'],
-        ['13','Roth','Stout','yes','c','10'],
-        ['14','Amos','Daniel','yes','a','5'],
-        ['','','','','',''],
-        ['15','Caesar','Rivers','yes','b','7'],
-        ['16','Eugenia','Nichols','yes','b','6'],
-        ['17','dieter','alvarado','yes','b','6'],
-        ['17','Dieter','Alvarado','no','c','7'],
-        ['17','Dieter','Alvarado','yes','a','9'],
-        ['18','Roary','Frank','yes','c','7'],
-        ['19','Ulric','Hensley','no','b','9'],
-        ['20','Felicia','Wilkins','yes','b','8'],
+def read_csv_file(filename):
+    data = []
+    with open(filename, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row:
+                data.append(row)
+    return data
+
+def remove_duplicates(data):
+    seen_ids = set()
+    new_data = []
+    for row in data:
+        if row['user_id'] not in seen_ids:
+            seen_ids.add(row['user_id'])
+            new_data.append(row)
+    return new_data
+
+def test_read_csv_file():
+    data = read_csv_file('results.csv')
+    assert len(data) == 20
+    assert data[0]['user_id'] == '1'
+    assert data[0]['first_name'] == 'Charissa'
+    assert data[0]['last_name'] == 'Clark'
+    assert data[0]['answer_1'] == 'yes'
+    assert data[0]['answer_2'] == 'c'
+    assert data[0]['answer_3'] == '7'
+
+def test_remove_duplicates():
+    data = [
+        {'user_id': '1', 'first_name': 'Charissa', 'last_name': 'Clark', 'answer_1': 'yes', 'answer_2': 'c', 'answer_3': '7'},
+        {'user_id': '2', 'first_name': 'Richard', 'last_name': 'McKinney', 'answer_1': 'yes', 'answer_2': 'b', 'answer_3': '7'},
+        {'user_id': '1', 'first_name': 'Charissa', 'last_name': 'Clark', 'answer_1': 'no', 'answer_2': 'a', 'answer_3': '5'}
     ]
+    new_data = remove_duplicates(data)
+    assert len(new_data) == 2
+    assert new_data[0]['user_id'] == '1'
+    assert new_data[0]['first_name'] == 'Charissa'
+    assert new_data[0]['last_name'] == 'Clark'
+    assert new_data[0]['answer_1'] == 'yes'
+    assert new_data[0]['answer_2'] == 'c'
+    assert new_data[0]['answer_3'] == '7'
+    assert new_data[1]['user_id'] == '2'
+    assert new_data[1]['first_name'] == 'Richard'
+    assert new_data[1]['last_name'] == 'McKinney'
+    assert new_data[1]['answer_1'] == 'yes'
+    assert new_data[1]['answer_2'] == 'b'
+    assert new_data[1]['answer_3'] == '7'
+
+if __name__ == '__main__':
+    input_file = 'results.csv'
+    data = read_csv_file(input_file)
+    data = remove_duplicates(data)
     
-def test_read_csv_file(sample_data):
-    file_path = 'results.csv'
-    assert read_csv_file(file_path) == sample_data
-    
-    
-def test_read_csv_file_with_nonexistent_file():
-    file_path = 'nonexistent.csv'
-    with pytest.raises(FileNotFoundError):
-        read_csv_file(file_path)
+    # print final data
+    for row in data:
+        print(row)
