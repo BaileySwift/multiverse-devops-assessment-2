@@ -1,0 +1,22 @@
+import csv
+from typing import List
+
+def read_csv_file(filename: str) -> List[dict]:
+    data = []
+    with open(filename, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row:
+                data.append(row)
+    return data
+
+if __name__ == '__main__':
+    input_file = 'clean_results.csv'
+    data = read_csv_file(input_file)
+    
+    # Print header
+    print('User ID\tFirst Name\tLast Name\tAnswer 1\tAnswer 2\tAnswer 3')
+    
+    # Print data
+    for row in data:
+        print(f"{row['user_id']}\t{row['first_name']}\t{row['last_name']}\t{row['answer_1']}\t{row['answer_2']}\t{row['answer_3']}")
