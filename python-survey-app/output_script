@@ -1,22 +1,39 @@
 import csv
-from typing import List
 
-def read_csv_file(filename: str) -> List[dict]:
-    data = []
-    with open(filename, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if row:
-                data.append(row)
-    return data
+# open the csv file
 
-if __name__ == '__main__':
-    input_file = 'clean_results.csv'
-    data = read_csv_file(input_file)
-    
-    # Print header
-    print('User ID\tFirst Name\tLast Name\tAnswer 1\tAnswer 2\tAnswer 3')
-    
-    # Print data
-    for row in data:
-        print(f"{row['user_id']}\t{row['first_name']}\t{row['last_name']}\t{row['answer_1']}\t{row['answer_2']}\t{row['answer_3']}")
+with open('clean_results.csv') as csvfile:
+    # read the csv file
+    reader = csv.reader(csvfile)
+   
+    # get the headers
+   
+    headers = next(reader)
+   
+    # get the maximum length of each column
+   
+    lengths = [len(header) for header in headers]
+    for row in reader:
+        for i in range(len(row)):
+            lengths[i] = max(lengths[i], len(row[i]))
+   
+    # print the headers
+   
+    for i in range(len(headers)):
+        print(f'{headers[i]:{lengths[i]}}', end=' ')
+    print()
+   
+    # print the divider
+   
+    for i in range(sum(lengths) + len(lengths) - 1):
+        print('-', end='')
+    print()
+   
+    # print the data
+   
+    csvfile.seek(0)
+    next(reader)
+    for row in reader:
+        for i in range(len(row)):
+            print(f'{row[i]:{lengths[i]}}', end=' ')
+        print()
