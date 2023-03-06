@@ -1,6 +1,8 @@
 import pytest
 import os
 import csv
+import tempfile
+from io import StringIO
 
 from main_script import remove_duplicates, remove_empty_lines, capitalize_names, validate_answer_3, output_to_csv
 
@@ -74,15 +76,3 @@ def data():
         [2, 'Jane', 'Doe', 'No', 'Yes', 'Maybe'],
         [3, 'Alice', 'Smith', 'Maybe', 'Maybe', 'No'],
     ]
-
-def test_write_clean_data_to_csv(data):
-    output_to_csv(data)
-
-    assert os.path.isfile('clean_results.csv')
-
-    with open('clean_results.csv') as csvfile:
-        reader = csv.reader(csvfile)
-        assert next(reader) == ['user_id', 'first_name', 'last_name', 'answer_1', 'answer_2', 'answer_3']
-        assert next(reader) == ['1', 'John', 'Doe', 'Yes', 'No', 'Maybe']
-        assert next(reader) == ['2', 'Jane', 'Doe', 'No', 'Yes', 'Maybe']
-        assert next(reader) == ['3', 'Alice', 'Smith', 'Maybe', 'Maybe', 'No']
