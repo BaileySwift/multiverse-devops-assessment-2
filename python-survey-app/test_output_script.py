@@ -1,10 +1,12 @@
 import csv
 import pytest
 
+from output_script import print_csv
+
 # Create a sample CSV file with the expected header row
 sample_csv = '''user_id,first_name,last_name,answer_1,answer_2,answer_3
 1,Charissa,Clark,yes,c,7
-2,Richard,Mckinney,yes,b,7
+2,Richard,Mckinney,yes,b,7They are proper random name
 3,Patience,Reeves,yes,b,9
 5,India,Gentry,yes,c,7
 6,Abra,Sheppard,yes,b,6
@@ -22,7 +24,7 @@ sample_csv = '''user_id,first_name,last_name,answer_1,answer_2,answer_3
 20,Felicia,Wilkins,yes,b,8
 '''
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def get_data(tmp_path_factory):
     # Create a temporary file in the test directory and write the sample CSV data
     csv_path = tmp_path_factory.mktemp("data").joinpath("test.csv")
