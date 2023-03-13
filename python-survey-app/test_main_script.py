@@ -22,6 +22,16 @@ def test_remove_duplicates():
     ]
     assert remove_duplicates(data) == expected_data
 
+    # Test when there are no duplicates in the data
+    data = [
+        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
+        ['2', 'Jane', 'Doe', 'No', '', ''],
+        ['3', 'John', 'Smith', '', 'Yes', '8'],
+        ['4', 'Tom', 'Hanks', 'Yes', 'No', '9']
+    ]
+    expected_data = data
+    assert remove_duplicates(data) == expected_data
+
 
 # Test remove_empty_lines function
 def test_remove_empty_lines():
@@ -38,15 +48,25 @@ def test_remove_empty_lines():
     ]
     assert remove_empty_lines(data) == expected_data
 
+    # Test when all lines are empty
+    data = [
+        ['', '', '', '', '', ''],
+        ['', '', '', '', '', ''],
+        ['', '', '', '', '', '']
+    ]
+    expected_data = []
+    assert remove_empty_lines(data) == expected_data
+
 
 # Test capitalize_names function
 def test_capitalize_names():
-    data = [
+    # Test with all lowercase names
+    data = [        
         ['1', 'john', 'doe', 'Yes', 'No', '5'],
-        ['2', 'JANE', 'DOE', 'No', '', ''],
+        ['2', 'jane', 'doe', 'No', '', ''],
         ['3', 'john', 'smith', '', 'Yes', '8']
     ]
-    expected_data = [
+    expected_data = [        
         ['1', 'John', 'Doe', 'Yes', 'No', '5'],
         ['2', 'Jane', 'Doe', 'No', '', ''],
         ['3', 'John', 'Smith', '', 'Yes', '8']
@@ -54,6 +74,47 @@ def test_capitalize_names():
     capitalize_names(data)
     assert data == expected_data
 
+    # Test with all uppercase names
+    data = [        
+        ['1', 'JOHN', 'DOE', 'Yes', 'No', '5'],
+        ['2', 'JANE', 'DOE', 'No', '', ''],
+        ['3', 'JOHN', 'SMITH', '', 'Yes', '8']
+    ]
+    expected_data = [        
+        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
+        ['2', 'Jane', 'Doe', 'No', '', ''],
+        ['3', 'John', 'Smith', '', 'Yes', '8']
+    ]
+    capitalize_names(data)
+    assert data == expected_data
+
+    # Test with mixed case names
+    data = [        
+        ['1', 'jOhn', 'DoE', 'Yes', 'No', '5'],
+        ['2', 'jAnE', 'DoE', 'No', '', ''],
+        ['3', 'jOhN', 'sMiTh', '', 'Yes', '8']
+    ]
+    expected_data = [        
+        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
+        ['2', 'Jane', 'Doe', 'No', '', ''],
+        ['3', 'John', 'Smith', '', 'Yes', '8']
+    ]
+    capitalize_names(data)
+    assert data == expected_data
+
+    # Test with non-alphabetic characters in name fields
+    data = [        
+        ['1', 'john123', 'doe', 'Yes', 'No', '5'],
+        ['2', 'Jane', 'doe@#', 'No', '', ''],
+        ['3', 'john', 'smith99', '', 'Yes', '8']
+    ]
+    expected_data = [        
+        ['1', 'John123', 'Doe', 'Yes', 'No', '5'],
+        ['2', 'Jane', 'Doe@#', 'No', '', ''],
+        ['3', 'John', 'Smith99', '', 'Yes', '8']
+    ]
+    capitalize_names(data)
+    assert data == expected_data
 
 # Test validate_answer_3 function
 def test_validate_answer_3():
