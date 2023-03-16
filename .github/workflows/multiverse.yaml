@@ -8,7 +8,7 @@ on:
 
 jobs:
   pytest:
-    name: Test the Demo module
+    name: Test the Survey Application
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the repository
@@ -27,4 +27,4 @@ jobs:
 
     - name: Run Pytest
       run: pytest
-      working-directory: demo-app
+      working-directory: python-survey-app
