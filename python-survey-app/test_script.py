@@ -1,228 +1,279 @@
 import pytest
 import os
-import csv
-import tempfile
-from io import StringIO
-import script1
-import script2
+import io
+import sys
+from csvhelper import *
 
-from script2 import remove_duplicates, remove_empty_lines, capitalize_names, validate_answer_3, output_to_csv, print_csv
-from script1 import read_csv_file, write_csv_file
+# Ticket 1 Tests
 
-# testing csv reader
+# Test 1: Check that the function returns an empty list when given an empty file.
+def test_read_csv_file_empty_file():
+    # Arrange
+    filename = 'empty_file.csv'
+    with open(filename, 'w') as csvfile:
+        pass
 
-# Arrange
-@pytest.fixture
-def csv_data():
-    return read_csv_file('results.csv')
+    # Act
+    result = read_csv_file(filename)
 
-# Assert
+    # Assert
+    assert result == []
 
-def test_csv_data_length(csv_data):
-    assert len(csv_data) > 0, "No data was read from the CSV file."
+    # Clean up
+    os.remove(filename)
 
-def test_csv_data_first_row(csv_data):
-    assert csv_data[0] == ['user_id', 'first_name', 'last_name', 'answer_1', 'answer_2', 'answer_3'], "The first row of the CSV file does not match the expected value."
+# Test 2: Check that the function raises a FileNotFoundError when given a non-existent file.
+def test_read_csv_file_nonexistent_file():
+    # Arrange
+    filename = 'nonexistent_file.csv'
+    if os.path.exists(filename):
+        os.remove(filename)
 
-def test_csv_data_second_row(csv_data):
-    assert csv_data[1] == ['1', 'Charissa', 'Clark', 'yes', 'c', '7'], "The second row of the CSV file does not match the expected value."
+    # Act and Assert
+    with pytest.raises(FileNotFoundError):
+        read_csv_file(filename)
 
-def test_csv_data_row_length(csv_data):
-    for row in csv_data:
-        assert len(row) == 6, "The number of columns in the row does not match the expected value."
-        
-# testing main script
+# Ticket 2 Tests
 
-# Test remove_duplicates function
-def test_remove_duplicates():
+# Test 1: checks that the function returns an empty list when given an empty list as input
+def test_remove_duplicates_empty_input():
+    # Arrange
+    data = []
+
+    # Act
+    result = remove_duplicates(data)
+
+    # Assert
+    assert result == []
+
+# Test 2: checks that the function returns the same list when given input with no duplicates.
+def test_remove_duplicates_no_duplicates():
+    # Arrange
     data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8'],
-        ['1', 'John', 'Doe', '', '', '9']
+        ['1', 'John', 'Doe'],
+        ['2', 'Jane', 'Doe'],
+        ['3', 'Bob', 'Smith'],
     ]
-    expected_data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8']
-    ]
-    assert remove_duplicates(data) == expected_data
 
-    # Test when there are no duplicates in the data
+    # Act
+    result = remove_duplicates(data)
+
+    # Assert
+    assert result == data
+    
+# Test 3: checks that the function removes one duplicate when given input with one duplicate.
+def test_remove_duplicates_one_duplicate():
+    # Arrange
     data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8'],
-        ['4', 'Tom', 'Hanks', 'Yes', 'No', '9']
+        ['1', 'John', 'Doe'],
+        ['2', 'Jane', 'Doe'],
+        ['1', 'John', 'Doe'],
+        ['3', 'Bob', 'Smith'],
     ]
-    expected_data = data
-    assert remove_duplicates(data) == expected_data
 
+    # Act
+    result = remove_duplicates(data)
 
-# Test remove_empty_lines function
-def test_remove_empty_lines():
-    data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8'],
-        ['', '', '', '', '', '']
-    ]
-    expected_data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8']
-    ]
-    assert remove_empty_lines(data) == expected_data
-
-    # Test when all lines are empty
-    data = [
-        ['', '', '', '', '', ''],
-        ['', '', '', '', '', ''],
-        ['', '', '', '', '', '']
-    ]
-    expected_data = []
-    assert remove_empty_lines(data) == expected_data
-
-
-# Test capitalize_names function
-def test_capitalize_names():
-    # Test with all lowercase names
-    data = [        
-        ['1', 'john', 'doe', 'Yes', 'No', '5'],
-        ['2', 'jane', 'doe', 'No', '', ''],
-        ['3', 'john', 'smith', '', 'Yes', '8']
-    ]
-    expected_data = [        
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8']
-    ]
-    capitalize_names(data)
-    assert data == expected_data
-
-    # Test with all uppercase names
-    data = [        
-        ['1', 'JOHN', 'DOE', 'Yes', 'No', '5'],
-        ['2', 'JANE', 'DOE', 'No', '', ''],
-        ['3', 'JOHN', 'SMITH', '', 'Yes', '8']
-    ]
-    expected_data = [        
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8']
-    ]
-    capitalize_names(data)
-    assert data == expected_data
-
-    # Test with mixed case names
-    data = [        
-        ['1', 'jOhn', 'DoE', 'Yes', 'No', '5'],
-        ['2', 'jAnE', 'DoE', 'No', '', ''],
-        ['3', 'jOhN', 'sMiTh', '', 'Yes', '8']
-    ]
-    expected_data = [        
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', ''],
-        ['3', 'John', 'Smith', '', 'Yes', '8']
-    ]
-    capitalize_names(data)
-    assert data == expected_data
-
-    # Test with non-alphabetic characters in name fields
-    data = [        
-        ['1', 'john123', 'doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'doe@#', 'No', '', ''],
-        ['3', 'john', 'smith99', '', 'Yes', '8']
-    ]
-    expected_data = [        
-        ['1', 'John123', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe@#', 'No', '', ''],
-        ['3', 'John', 'Smith99', '', 'Yes', '8']
-    ]
-    capitalize_names(data)
-    assert data == expected_data
-
-# Test validate_answer_3 function
-def test_validate_answer_3():
-    data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['2', 'Jane', 'Doe', 'No', '', '11'],
-        ['3', 'John', 'Smith', '', 'Yes', '8'],
-        ['4', 'Tom', 'Hanks', 'Yes', 'No', 'abc']
-    ]
-    expected_data = [
-        ['1', 'John', 'Doe', 'Yes', 'No', '5'],
-        ['3', 'John', 'Smith', '', 'Yes', '8']
-    ]
-    assert validate_answer_3(data) == expected_data
-   
-@pytest.fixture
-def data():
-    return [
-        [1, 'John', 'Doe', 'Yes', 'No', 'Maybe'],
-        [2, 'Jane', 'Doe', 'No', 'Yes', 'Maybe'],
-        [3, 'Alice', 'Smith', 'Maybe', 'Maybe', 'No'],
+    # Assert
+    assert result == [
+        ['1', 'John', 'Doe'],
+        ['2', 'Jane', 'Doe'],
+        ['3', 'Bob', 'Smith'],
     ]
     
-# test output script
+# Test 4: checks that the function removes multiple duplicates when given input with multiple duplicates.
+def test_remove_duplicates_multiple_duplicates():
+    # Arrange
+    data = [
+        ['1', 'John', 'Doe'],
+        ['2', 'Jane', 'Doe'],
+        ['1', 'John', 'Doe'],
+        ['3', 'Bob', 'Smith'],
+        ['2', 'Jane', 'Doe'],
+    ]
 
-# Create a sample CSV file with the expected header row
-sample_csv = '''user_id,first_name,last_name,answer_1,answer_2,answer_3
-1,Charissa,Clark,yes,c,7
-2,Richard,Mckinney,yes,b,7They are proper random name
-3,Patience,Reeves,yes,b,9
-5,India,Gentry,yes,c,7
-6,Abra,Sheppard,yes,b,6
-8,Diana,Cameron,yes,b,9
-9,Alexander,Herring,no,b,4
-11,Uma,Glass,yes,a,2
-12,Brittany,Weeks,yes,b,8
-13,Roth,Stout,yes,c,10
-14,Amos,Daniel,yes,a,5
-15,Caesar,Rivers,yes,b,7
-16,Eugenia,Nichols,yes,b,6
-17,Dieter,Alvarado,yes,b,6
-18,Roary,Frank,yes,c,7
-19,Ulric,Hensley,no,b,9
-20,Felicia,Wilkins,yes,b,8
-'''
+    # Act
+    result = remove_duplicates(data)
 
-@pytest.fixture(scope="session")
-def get_data(tmp_path_factory):
-    # Create a temporary file in the test directory and write the sample CSV data
-    csv_path = tmp_path_factory.mktemp("data").joinpath("test.csv")
-    with csv_path.open("w", newline="") as f:
-        f.write(sample_csv)
+    # Assert
+    assert result == [
+        ['1', 'John', 'Doe'],
+        ['2', 'Jane', 'Doe'],
+        ['3', 'Bob', 'Smith'],
+    ]
 
-    with csv_path.open() as csvfile:
-        reader = csv.reader(csvfile)
-        headers = next(reader)
-        data = []
-        for row in reader:
-            data.append(row)
-    return headers, data
+# Ticket 3 Tests
 
-def test_get_headers(get_data):
-    headers, _ = get_data
-    print(headers)
-    assert len(headers) == 6
-    assert headers[0] == 'user_id'
-    assert headers[1] == 'first_name'
-    assert headers[2] == 'last_name'
-    assert headers[3] == 'answer_1'
-    assert headers[4] == 'answer_2'
-    assert headers[5] == 'answer_3'
+# Test 1: Check that the function returns an empty list when given an empty list.
+def test_remove_empty_lines_empty_list():
+    # Arrange
+    data = []
 
-def test_get_max_lengths(get_data):
-    _, data = get_data
-    lengths = [0] * 6
-    for row in data:
-        for i in range(len(row)):
-            lengths[i] = max(lengths[i], len(row[i]))
-    print(lengths)  # add this line to print the lengths of each column
-    assert lengths[0] == 2
-    assert lengths[1] == 9
-    assert lengths[2] == 8
-    assert lengths[3] == 3
-    assert lengths[4] == 1
-    assert lengths[5] == 28  # update this assertion as necessary
+    # Act
+    result = remove_empty_lines(data)
+
+    # Assert
+    assert result == []
+
+
+# Test 2: Check that the function returns the original data when there are no empty lines.
+def test_remove_empty_lines_no_empty_lines():
+    # Arrange
+    data = [
+        ['1', 'Name1', 'Email1'],
+        ['2', 'Name2', 'Email2'],
+        ['3', 'Name3', 'Email3'],
+        ['4', 'Name4', 'Email4']
+    ]
+
+    # Act
+    result = remove_empty_lines(data)
+
+    # Assert
+    assert result == data
+
+# Ticket 4 Tests
+
+# Test 1: tests whether the function can handle input data that is all in uppercase
+def test_capitalize_names_all_caps():
+    # Arrange
+    input_data = [
+        [1, "JOHN", "DOE"],
+        [2, "JANE", "DOE"]
+    ]
+    expected_output = [
+        [1, "John", "Doe"],
+        [2, "Jane", "Doe"]
+    ]
+
+    # Act
+    capitalize_names(input_data)
+
+    # Assert
+    assert input_data == expected_output
+
+# Test 2: tests whether the function can handle input data that is in mixed case
+def test_capitalize_names_mixed_case():
+    # Arrange
+    input_data = [
+        [1, "jOhN", "dOe"],
+        [2, "jAnE", "dOe"]
+    ]
+    expected_output = [
+        [1, "John", "Doe"],
+        [2, "Jane", "Doe"]
+    ]
+
+    # Act
+    capitalize_names(input_data)
+
+    # Assert
+    assert input_data == expected_output
+
+# Test 3: tests whether the function correctly leaves already capitalized names unchanged.
+def test_capitalize_names_already_capitalized():
+    # Arrange
+    input_data = [
+        [1, "John", "Doe"],
+        [2, "Jane", "Doe"]
+    ]
+    expected_output = [
+        [1, "John", "Doe"],
+        [2, "Jane", "Doe"]
+    ]
+
+    # Act
+    capitalize_names(input_data)
+
+    # Assert
+    assert input_data == expected_output
+
+# Ticket 5 Tests
+
+# Test 1: tests the scenario where all the rows in the input data have valid values for answer_3, 
+def test_validate_answer_3_valid_values():
+    # Arrange
+    data = [
+        ["1", "John", "Doe", "25", "M", "5"],
+        ["2", "Jane", "Smith", "35", "F", "1"],
+        ["3", "Bob", "Johnson", "42", "M", "10"]
+    ]
+
+    # Act
+    result = validate_answer_3(data)
+
+    # Assert
+    assert len(result) == 3
+    assert result == data
+
+# Test 2: tests the scenario where some rows in the input data have invalid values for answer_3
+def test_validate_answer_3_invalid_values():
+    # Arrange
+    data = [
+        ["1", "John", "Doe", "25", "M", "15"],
+        ["2", "Jane", "Smith", "35", "F", "0"],
+        ["3", "Bob", "Johnson", "42", "M", "Invalid"]
+    ]
+
+    # Act
+    result = validate_answer_3(data)
+
+    # Assert
+    assert len(result) == 0
+    assert result == []
+    
+# Test 3: tests the scenario where some rows in the input data have non-integer values for answer_3
+def test_validate_answer_3_mixed_values():
+    # Arrange
+    data = [
+        ["1", "John", "Doe", "25", "M", "5"],
+        ["2", "Jane", "Smith", "35", "F", "15"],
+        ["3", "Bob", "Johnson", "42", "M", "Invalid"]
+    ]
+
+    # Act
+    result = validate_answer_3(data)
+
+    # Assert
+    assert len(result) == 1
+    assert result == [["1", "John", "Doe", "25", "M", "5"]]
+
+ # Ticket 6 Tests
+
+# Test 1: ensures that the output file is actually created
+def test_output_file_created(tmp_path):
+    data = [
+        ['1', 'Alice', 'Jones', 'yes', 'no', '5'],
+        ['2', 'Bob', 'Smith', 'no', 'yes', '7'],
+        ['3', 'Charlie', 'Brown', 'yes', 'yes', '3']
+    ]
+    filename = os.path.join(tmp_path, 'test_output_file_created.csv')
+    write_clean_data(data, filename)
+    assert os.path.exists(filename)
+
+# Test 2: ensures that the output file has the correct header and data rows.
+def test_output_file_format(tmp_path):
+    data = [
+        ['1', 'Alice', 'Jones', 'yes', 'no', '5'],
+        ['2', 'Bob', 'Smith', 'no', 'yes', '7'],
+        ['3', 'Charlie', 'Brown', 'yes', 'yes', '3']
+    ]
+    filename = os.path.join(tmp_path, 'test_output_file_format.csv')
+    write_clean_data(data, filename)
+    with open(filename) as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        assert header == ['User ID', 'First Name', 'Last Name', 'Answer 1', 'Answer 2', 'Answer 3']
+        rows = list(reader)
+        assert rows == data
+
+# Test 3: ensures that an empty input file produces an empty output file
+def test_output_file_empty(tmp_path):
+    data = []
+    filename = os.path.join(tmp_path, 'test_output_file_empty.csv')
+    write_clean_data(data, filename)
+    with open(filename) as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        assert header == ['User ID', 'First Name', 'Last Name', 'Answer 1', 'Answer 2', 'Answer 3']
+        assert len(list(reader)) == 0
