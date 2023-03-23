@@ -4,7 +4,6 @@ resource "aws_lb" "this" {
     load_balancer_type = "application"
     security_groups = [aws_security_group.alb.id]
     subnets = [for subnet in aws_subnet.public : subnet.id]
-    
     tags = {
         Name = "multiverse"
     }
@@ -14,7 +13,6 @@ resource "aws_lb_listener" "http" {
     load_balancer_arn = aws_lb.this.arn
     port = "80"
     protocol = "HTTP"
-
     default_action {
         type = "forward"
         target_group_arn = aws_lb_target_group.http.arn
@@ -34,7 +32,6 @@ resource "aws_launch_template" "this" {
     image_id = data.aws_ami.amazon_linux.id
     instance_type = "t3.micro"
     update_default_version = true
-
     user_data = base64encode(
         templatefile(
             "${path.module}/ec2-userdata.tftpl",
@@ -60,7 +57,7 @@ resource "aws_autoscaling_group" "this" {
     health_check_type = "ELB"
     desired_capacity = 1
     vpc_zone_identifier = [for subnet in aws_subnet.public : subnet.id]
-
+    
     launch_template {
         id = aws_launch_template.this.id
         version = "$Latest"
@@ -71,14 +68,12 @@ resource "aws_autoscaling_group" "this" {
         value = "multiverse"
         propagate_at_launch = true
     }
-    
+
     instance_refresh {
         strategy = "Rolling"
-        
         preferences {
             min_healthy_percentage = 50
         }
-
         triggers = ["tag"]
     }
 

@@ -2,7 +2,6 @@ resource "aws_vpc" "this" {
     cidr_block = "10.0.0.0/16"
     enable_dns_support = true
     enable_dns_hostnames = true
-    
     tags = {
         Name = "multiverse"
     }
@@ -10,15 +9,13 @@ resource "aws_vpc" "this" {
 
 resource "aws_subnet" "public" {
     for_each = toset(["1", "2"])
-    
     vpc_id = aws_vpc.this.id
     cidr_block = "10.0.${each.key}.0/24"
-    
     availability_zone = element(
         data.aws_availability_zones.eu_west_2.names,
         each.key
     )
-    
+
     tags = {
         Name = "multiverse-${each.key}"
     }
@@ -26,15 +23,14 @@ resource "aws_subnet" "public" {
 
 resource "aws_internet_gateway" "this" {
     vpc_id = aws_vpc.this.id
-    
     tags = {
         Name = "multiverse"
     }
 }
 
+
 resource "aws_route_table" "public" {
     vpc_id = aws_vpc.this.id
-    
     tags = {
         Name = "multiverse-public"
     }
@@ -48,7 +44,6 @@ resource "aws_route" "public" {
 
 resource "aws_route_table_association" "public" {
     for_each = aws_subnet.public
-    
     subnet_id = each.value.id
     route_table_id = aws_route_table.public.id
 }
@@ -56,9 +51,8 @@ resource "aws_route_table_association" "public" {
 resource "aws_vpc_endpoint" "s3" {
     vpc_id = aws_vpc.this.id
     service_name = "com.amazonaws.eu-west-2.s3"
-    
     tags = {
-        Name = "multiverse"
+     Name = "multiverse"
     }
 }
 
