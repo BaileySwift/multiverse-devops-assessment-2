@@ -3,9 +3,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-<<<<<<< HEAD
-#aws-credentials
-=======
 # aws-credentials
->>>>>>> c6c666eb7869ee4a687d56f5c45c6dbfd059c865
 aws-credentials
